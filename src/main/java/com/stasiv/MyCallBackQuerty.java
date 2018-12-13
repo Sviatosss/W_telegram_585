@@ -1,3 +1,5 @@
+package com.stasiv;
+
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 /**

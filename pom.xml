@@ -57,7 +57,7 @@
                     <assembleDirectory>target</assembleDirectory>
                     <programs>
                         <program>
-                            <mainClass>Main</mainClass>
+                            <mainClass>com.stasiv.Main</mainClass>
                             <name>worker</name>
                         </program>
                     </programs>

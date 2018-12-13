@@ -1,15 +1,9 @@
-import com.mongodb.client.MongoCollection;
-import org.bson.Document;
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoCursor;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
-import java.util.ArrayList;
-import java.util.regex.Pattern;
+package com.stasiv;
 
-import static java.util.Objects.isNull;
+import com.mongodb.client.MongoCollection;
+import org.bson.Document;
+
+import java.util.ArrayList;
 
 /**
  * Created by sviatosss on 01.12.2018.
