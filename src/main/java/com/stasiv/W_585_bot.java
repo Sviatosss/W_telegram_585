@@ -9,19 +9,27 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 public class W_585_bot extends TelegramLongPollingBot {
 
     public void onUpdateReceived(Update update) {
-//        com.stasiv.Sending sending = new com.stasiv.Sending();
+        Sending sending = new com.stasiv.Sending();
 
-        Service service = new Service();
-        service.sendAllService(update);
+//        Service service = new Service();
+//        service.sendAllService(update);
 
 //        com.stasiv.ServicesManager servicesManager = new  com.stasiv.ServicesManager();
 //        servicesManager.addService(update.getMessage().getText());
 
-//        if (update.hasMessage() && update.getMessage().hasText()) {
-//            sending.sendMainMenu(update);
-//        } else if (update.hasCallbackQuery()) {
-//            com.stasiv.MyCallBackQuerty.getInstance().switchByMenus(update);
-//        }
+        if (update.hasMessage() && update.getMessage().hasText()) {
+            String s = update.getMessage().getText();
+            UsersManager.getInstance().issetUser(update);
+            if (s.equals("/start")){
+                sending.sendMainMenu(update);
+            }else if (UsersManager.getInstance().getQuery(update) != null){
+                QuertySwichs quertySwichs = new QuertySwichs();
+                quertySwichs.quertyMainSwichs(update);
+            }
+        } else if (update.hasCallbackQuery()) {
+            System.out.println(update.getCallbackQuery().getData());
+            MyCallBackQuerty.getInstance().switchByMenus(update);
+        }
 
 
 

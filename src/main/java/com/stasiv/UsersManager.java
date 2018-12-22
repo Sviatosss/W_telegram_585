@@ -6,8 +6,11 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.telegram.telegrambots.meta.api.objects.Chat;
+import org.telegram.telegrambots.meta.api.objects.Update;
 
 import java.util.ArrayList;
+
+import static com.mongodb.client.model.Filters.eq;
 
 public class UsersManager {
 
@@ -44,31 +47,38 @@ public class UsersManager {
         return sInstance;
     }
 
-    /**
-     * Returns user name + nickname based on chat
-     * @param chat {@link Chat} - contains current chat with user
-     * @return first name + last name + nickname
-     */
-    public String getNameByChat(Chat chat) {
-        Document query = new Document("id", chat.getId().toString());
-
+    public void issetUser(Update update) {
+        Long id = Functions.getInstance().getId(update);
+        Document query = new Document("id", id.toString());
         Document user = mUsersCollection.find(query).first();
 
         if (user == null) {
-            Document newUser = new Document("id", chat.getId().toString())
-                    .append("firstName", chat.getFirstName())
-                    .append("lastName", chat.getLastName())
-                    .append("username", chat.getUserName());
+            Document newUser = new Document("id", update.getMessage().getChat().getId().toString())
+                    .append("firstName", update.getMessage().getChat().getFirstName())
+                    .append("lastName", update.getMessage().getChat().getLastName())
+                    .append("username", update.getMessage().getChat().getUserName())
+                    .append("current_querty", null);
             mUsersCollection.insertOne(newUser);
-            return "Вас не було в базі користувачів, але ми вас добавили ;-)\n";
         }
+    }
+    public void updateQuery(Update update, String newQuest){
+        String id = Functions.getInstance().getId(update).toString();
+        mUsersCollection.updateOne(eq("id", id), new Document("$set", new Document("current_query", newQuest)));
+    }
+    public String getQuery(Update update){
+        return getUserInfoString(update, "current_query");
+    }
+    public String getUserInfoString(Update update, String field){
+        String id = Functions.getInstance().getId(update).toString();
+        Document query = new Document("id", id);
+        Document user = mUsersCollection.find(query).first();
+        return user.getString(field);
+    }
 
-        String firstName = user.getString("firstName");
-        String lastName = user.getString("lastName");
-        String username = user.getString("username");
-
-        // Більше інформації по стилізації тексту в Телеграмі: https://core.telegram.org/bots/api#markdown-style
-        return "*" + firstName + " " + lastName + "*, нікнейм: *" + username + "*\n";
+    public String getUserData(String id){
+        Document query = new Document("id", id);
+        Document user = mUsersCollection.find(query).first();
+        return "user - " + "@" + user.getString("username") + "\nfirstName - " + user.getString("firstName");
     }
 
     public String saveProduct(Product product){
@@ -89,7 +99,6 @@ public class UsersManager {
 
     }
     public String updatePrice(){
-
         for (Document cursor : mProductsCollection.find()) {
             String weight = cursor.getString("weight");
             weight = weight.replace(" гр", "");
@@ -106,10 +115,56 @@ public class UsersManager {
         }
         return "ok";
     }
-    public ArrayList<Product> getProductByPrice(double price){
+    public ArrayList<Product> getProductByPrice(double price, int page){
         ArrayList<Product> arrayListProducts = new ArrayList<Product>();
+        int iteration = 0;
         for (Document currentProduct : mProductsCollection.find()) {
-            if(currentProduct.getDouble("price") < price){
+            if(currentProduct.getDouble("price") <= price){
+                if (page == iteration){
+                    Product product = new Product(
+                            currentProduct.getString("name"),
+                            currentProduct.getString("weight"),
+                            currentProduct.getString("insert"),
+                            currentProduct.getString("img_url"),
+                            currentProduct.getString("category_id"),
+                            currentProduct.getDouble("price")
+                    );
+                    arrayListProducts.add(product);
+                    break;
+                }
+                iteration++;
+            }
+        }
+        return arrayListProducts;
+    }
+    public ArrayList<Product> getProductByCat(String cat, int page){
+        ArrayList<Product> arrayListProducts = new ArrayList<>();
+        int iteration = 0;
+        for (Document currentProduct : mProductsCollection.find()) {
+            if(currentProduct.getString("category_id").equals(cat)){
+                if (page == iteration){
+                    Product product = new Product(
+                            currentProduct.getString("name"),
+                            currentProduct.getString("weight"),
+                            currentProduct.getString("insert"),
+                            currentProduct.getString("img_url"),
+                            currentProduct.getString("category_id"),
+                            currentProduct.getDouble("price")
+                    );
+                    arrayListProducts.add(product);
+                    break;
+                }
+                iteration++;
+            }
+        }
+        return arrayListProducts;
+    }
+
+    public ArrayList<Product> getProduct(int page){
+        ArrayList<Product> arrayListProducts = new ArrayList<>();
+        int iteration = 0;
+        for (Document currentProduct : mProductsCollection.find()) {
+            if (iteration == page){
                 Product product = new Product(
                         currentProduct.getString("name"),
                         currentProduct.getString("weight"),
@@ -119,8 +174,9 @@ public class UsersManager {
                         currentProduct.getDouble("price")
                 );
                 arrayListProducts.add(product);
-                System.out.println(product);
+                break;
             }
+            iteration++;
         }
         return arrayListProducts;
     }

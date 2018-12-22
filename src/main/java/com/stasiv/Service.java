@@ -28,19 +28,23 @@ public class Service {
         this.serviceDescription = serviceDescription;
         this.priceInfo = priceInfo;
     }
-    public void sendAllService(Update update){
+    public String sendService(int page){
         ServicesManager servicesManager = new ServicesManager();
         ArrayList<Service> serviceArrayList = servicesManager.getServiceArrayList();
+        int iteration = 0;
         for (Service service : serviceArrayList){
-            sendService(update, service);
+            if (iteration == page){
+                return sendService(service);
+            }
+            iteration++;
         }
+        return "";
     }
-    public void sendService(Update update, Service service){
-        Sending sending = new Sending();
+    public String sendService(Service service){
         if (isNull(service.priceInfo)){
-            sending.sendMsg(update, service.serviceDescription + "\n" + "Золото - " + service.priceGold + "\n" + "Срібло - " + service.priceSilver);
+            return service.serviceDescription + "\n" + "Золото - " + service.priceGold + "\n" + "Срібло - " + service.priceSilver;
         }else {
-            sending.sendMsg(update, service.serviceDescription + "\n" + service.priceInfo);
+            return service.serviceDescription + "\n" + service.priceInfo;
         }
     }
 }
